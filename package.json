@@ -1,0 +1,23 @@
+{
+  "name": "webpage_screenshot",
+  "version": "1.0.0",
+  "description": "一个用于解决由服务端触发的网页截图需求的开源服务。",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YHaoNan/webpage_screenshot.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/YHaoNan/webpage_screenshot/issues"
+  },
+  "homepage": "https://github.com/YHaoNan/webpage_screenshot#readme",
+  "dependencies": {
+    "pidusage": "^4.0.1",
+    "puppeteer-core": "^24.9.0"
+  }
+}
