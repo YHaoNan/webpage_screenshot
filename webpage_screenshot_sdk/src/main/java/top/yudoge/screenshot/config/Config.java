@@ -8,13 +8,13 @@ public class Config {
 
     private String queueName;
 
-    private String maxQueueSize;
+    private Integer maxQueueSize;
 
     public Config(
             String redisURL,
             String redisDB,
             String queueName,
-            String maxQueueSize
+            Integer maxQueueSize
     ) {
         this.redisURL = redisURL;
         this.redisDB = redisDB;
@@ -22,7 +22,7 @@ public class Config {
         this.maxQueueSize = maxQueueSize;
     }
 
-    public String getMaxQueueSize() {
+    public Integer getMaxQueueSize() {
         return maxQueueSize;
     }
 

@@ -3,12 +3,10 @@ package top.yudoge.screenshot.service;
 import top.yudoge.screenshot.task.Task;
 import top.yudoge.screenshot.task.TaskResult;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.stream.Collectors;
 
 /**
  * This class is used to wait the result of tasks.
@@ -20,26 +18,39 @@ public class ScreenShotResultMultiplexer extends Thread {
     private Map<String, TaskWrapper> inflightTasks = new ConcurrentHashMap<>();
     private Map<String, TaskResult> taskResults = new ConcurrentHashMap<>();
 
+    private ScreenShotResultFetcher screenShotResultFetcher;
+
+    public ScreenShotResultMultiplexer(ScreenShotResultFetcher fetcher) {
+        super("ScreenShotResultMultiplexer");
+        this.setDaemon(true);
+        this.screenShotResultFetcher = fetcher;
+    }
+
     public TaskResult waitResult(Task task) throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         TaskWrapper wrapper = new TaskWrapper(task, latch);
         inflightTasks.put(task.getId(), wrapper);
         // The timeout value is a suggestion now, we will be set a knob for each task later.
-        boolean isDone = latch.await(10000, java.util.concurrent.TimeUnit.MILLISECONDS);
+        try {
+            boolean isDone = latch.await(10000, java.util.concurrent.TimeUnit.MILLISECONDS);
 
-        TaskResult result = null;
-        if (!isDone) {
-            result =TaskResult.failed("Timeout to waiting for result");
-        } else if (taskResults.containsKey(task.getId())) {
-            result = taskResults.get(task.getId());
-            // we don't clear result immediately,
-            // it will be cleared only by run() periodically to avoid potential collision.
-        } else {
-            result = TaskResult.failed("Task result not found");
+            TaskResult result = null;
+            if (!isDone) {
+                result =TaskResult.failed(task.getId(), "Timeout to waiting for result");
+            } else if (taskResults.containsKey(task.getId())) {
+                result = taskResults.get(task.getId());
+            } else {
+                result = TaskResult.failed(task.getId(), "Task result not found");
+            }
+
+            return result;
+        } catch (InterruptedException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            throw e;
+        } finally {
+            inflightTasks.remove(task.getId());
         }
-
-        inflightTasks.remove(task.getId());
-        return result;
     }
 
     public void run() {
@@ -53,12 +64,29 @@ public class ScreenShotResultMultiplexer extends Thread {
                 }
             }
 
-            Set<String> allIds = inflightTasks.keySet();
-            // redis multi-get
-            // if any task is done
-            List<String> doneTaskIds = new ArrayList<>();
+            // 1. try to fetch all task result
+            List<TaskResult> fetchResults = screenShotResultFetcher.fetch(inflightTasks.values().stream().map(TaskWrapper::getTask).collect(Collectors.toList()));
+            if (fetchResults == null || fetchResults.isEmpty()) { // nothing fetched
+                try {
+                    Thread.sleep(500);
+                    continue;
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            // 2. process all the task results. put th result and notify the waiting threads.
+            for (TaskResult result : fetchResults) {
+                TaskWrapper taskWrapper = inflightTasks.get(result.getTaskId());
+                if (Objects.nonNull(taskWrapper)) {
+                    taskResults.put(result.getTaskId(), result);
+                    taskWrapper.latch.countDown();
+                }
+            }
+
         }
     }
+
 
     private static class TaskWrapper {
         private Task task;
@@ -66,6 +94,10 @@ public class ScreenShotResultMultiplexer extends Thread {
         public TaskWrapper(Task task, CountDownLatch latch) {
             this.task = task;
             this.latch = latch;
+        }
+
+        public Task getTask() {
+            return task;
         }
     }
 }

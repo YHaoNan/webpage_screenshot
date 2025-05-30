@@ -3,6 +3,11 @@ package top.yudoge.screenshot.task;
 public class TaskResult {
 
     /**
+     * task id
+     */
+    private String taskId;
+
+    /**
      * Task status: 0-failed, 1-success
      */
     private Integer status;
@@ -17,10 +22,15 @@ public class TaskResult {
      */
     private String failedReason;
 
-    public TaskResult(Integer status, String imageBase64, String failedReason) {
+    public TaskResult(String taskId, Integer status, String imageBase64, String failedReason) {
+        this.taskId = taskId;
         this.status = status;
         this.imageBase64 = imageBase64;
         this.failedReason = failedReason;
+    }
+
+    public String getTaskId() {
+        return taskId;
     }
 
     public Integer getStatus() {
@@ -39,11 +49,11 @@ public class TaskResult {
         return status == SUCCESS;
     }
 
-    public static TaskResult success(String imageBase64) {
-        return new TaskResult(SUCCESS, imageBase64, null);
+    public static TaskResult success(String taskId, String imageBase64) {
+        return new TaskResult(taskId, SUCCESS, imageBase64, null);
     }
-    public static TaskResult failed(String failedReason) {
-        return new TaskResult(FAILED, null, failedReason);
+    public static TaskResult failed(String taskId, String failedReason) {
+        return new TaskResult(taskId, FAILED, null, failedReason);
     }
 
     public static final Integer SUCCESS = 1;
