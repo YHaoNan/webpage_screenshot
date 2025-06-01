@@ -1,7 +1,10 @@
 {
   "dependencies": {
+    "ini": "^5.0.0",
     "ioredis": "^5.6.1",
-    "puppeteer-core": "^24.9.0"
+    "nacos": "^2.6.0",
+    "puppeteer-core": "^24.9.0",
+    "winston": "^3.17.0"
   },
   "name": "webpage_screenshot",
   "version": "1.0.0",

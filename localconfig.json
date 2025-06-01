@@ -1,0 +1,7 @@
+{
+    "redisURL": "localhost:6379",
+    "redisDB": 0,
+    "queueName": "webpage_screenshot:taskqueue",
+    "consumeTimeout": 10,
+    "chromePath": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+}

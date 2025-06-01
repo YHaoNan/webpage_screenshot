@@ -4,6 +4,7 @@ import puppeteer from 'puppeteer-core';
 
 
 const config = initConfig();
+console.log(config)
 const queue = initQueue(config);
 const browser = await puppeteer.launch({
     args: [
@@ -12,7 +13,7 @@ const browser = await puppeteer.launch({
         '--disable-dev-shm-usage',
         '--disable-accelerated-2d-canvas',
     ],
-    executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+    executablePath: config.chromePath
 });
 
 while (true) {
@@ -43,7 +44,7 @@ while (true) {
         // todo task加投递时间，timeout，过期不处理
 
         const type = task.imageFormat || 'jpeg';
-        const quality = task.imageQuality || 80;
+        const quality = task.imageQuality || 60;
 
         const imageBase64 = await page.screenshot({
             type,
