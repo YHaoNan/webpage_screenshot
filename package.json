@@ -1,4 +1,8 @@
 {
+  "dependencies": {
+    "ioredis": "^5.6.1",
+    "puppeteer-core": "^24.9.0"
+  },
   "name": "webpage_screenshot",
   "version": "1.0.0",
   "description": "一个用于解决由服务端触发的网页截图需求的开源服务。",
@@ -15,9 +19,5 @@
   "bugs": {
     "url": "https://github.com/YHaoNan/webpage_screenshot/issues"
   },
-  "homepage": "https://github.com/YHaoNan/webpage_screenshot#readme",
-  "dependencies": {
-    "pidusage": "^4.0.1",
-    "puppeteer-core": "^24.9.0"
-  }
+  "homepage": "https://github.com/YHaoNan/webpage_screenshot#readme"
 }
