@@ -2,6 +2,9 @@
 const STATUS_FAILED = 0;
 const STATUS_SUCCESS = 1;
 
+/**
+ * timeoutAt / resubmit等机制待实现
+ */
 class Task {
 
     constructor(
@@ -10,13 +13,22 @@ class Task {
         viewPort = {width: 1920, height: 1080},
         headers = {},
         imageFormat = 'jpeg',
-        imageQuality = 80
+        imageQuality = 80,
+        resubmitOnError = false,
+        resubmitCount = 0,
+        maxResubmitCount = 3,
+        timeoutAt
     ) {
         this.id = id;
         this.url = url;
         this.viewPort = viewPort;
         this.imageFormat = imageFormat;
         this.imageQuality = imageQuality;
+        this.headers = headers;
+        this.resubmitOnError = resubmitOnError;
+        this.resubmitCount = resubmitCount;
+        this.maxResubmitCount = maxResubmitCount;
+        this.timeoutAt = timeoutAt;
     }
 
     reportStatus(status, failedReason) {
@@ -50,7 +62,7 @@ class RedisTaskQueue extends TaskQueue {
             taskStr => {
                 if (taskStr) {
                     const task = JSON.parse(taskStr);
-                    return new RedisTask(task.id, task.url, task.viewPort, task.imageFormat, task.imageQuality, this.redis, this.config);
+                    return new RedisTask(task.id, task.url, task.viewPort, task.imageFormat, task.imageQuality, task.headers, task.resubmitOnError, task.resubmitCount, task.maxResubmitCount, task.timeoutAt, this.redis, this.config);
                 }
                 return null;
             }
@@ -61,8 +73,8 @@ class RedisTaskQueue extends TaskQueue {
 
 class RedisTask extends Task {
 
-    constructor(id, url, viewPort, imageFormat, imageQuality, redis, config) {
-        super(id, url, viewPort, imageFormat, imageQuality);
+    constructor(id, url, viewPort, imageFormat, imageQuality, headers, resubmitOnError, resubmitCount, maxResubmitCount, timeoutAt, redis, config) {
+        super(id, url, viewPort, imageFormat, imageQuality, headers, resubmitOnError, resubmitCount, maxResubmitCount, timeoutAt);
         this.redis = redis;
         this.config = config;
     }

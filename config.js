@@ -1,7 +1,7 @@
 import { requireNonNull } from './common.js'
 import { parse } from 'ini'
 import process from 'process'
-import logger from 'winston'
+import { log } from './logger.js'
 import fs from 'fs'
 
 
@@ -14,14 +14,14 @@ class Config {
         this.consumeTimeout = 0
     }
 
-    set(redisURL, redisDB, queueName, consumeTimeout, chromePath) {
+    set(redisURL, redisDB, queueName, consumeTimeout, chromePath, maxConcurrentInflightTask) {
         this.redisURL = redisURL
         requireNonNull(this.redisURL, 
             'No [redisURL] found in local config file'
         );
         this.redisDB = redisDB
         if (this.redisDB === undefined) {
-            logger.warn(`No [redisDB] found in local config file. Fallback to 0`);
+            log.warn(`No [redisDB] found in local config file. Fallback to 0`);
             this.redisDB = 0;
         }
         this.queueName = queueName
@@ -30,13 +30,18 @@ class Config {
         );
         this.consumeTimeout = consumeTimeout
         if (this.consumeTimeout === undefined) {
-            logger.warn(`No [consumeTimeout] found in local config file. Fallback to 10s`);
+            log.warn(`No [consumeTimeout] found in local config file. Fallback to 10s`);
             this.consumeTimeout = 10;
         }
         this.chromePath = chromePath
         requireNonNull(this.chromePath, 
             'No [chromePath] found in local config file'
         );
+        this.maxConcurrentInflightTask = maxConcurrentInflightTask
+        if (this.maxConcurrentInflightTask === undefined) {
+            log.warn(`No [maxConcurrentInflightTask] found in local config file. Fallback to 10`);
+            this.maxConcurrentInflightTask = 10;
+        }
     }
 }
 
@@ -46,7 +51,7 @@ class LocalFileConfig extends Config {
         requireNonNull(env.file_path, 
             'No [file_path] found in env.ini'
         );
-        logger.info(`Using local config file: ${env.file_path}`);
+        log.info(`Using local config file: ${env.file_path}`);
         const configContent = fs.readFileSync(env.file_path, 'utf-8');
         const config = JSON.parse(configContent)
         super.set(
@@ -54,7 +59,8 @@ class LocalFileConfig extends Config {
             config.redisDB,
             config.queueName,
             config.consumeTimeout,
-            config.chromePath
+            config.chromePath,
+            config.maxConcurrentInflightTask
         )
     }
 }
@@ -70,9 +76,9 @@ class NacosConfig extends Config {
 
 function initConfig() {
     const env = getEnv();
-    logger.info(`Active env: ${env}`)
+    log.info(`Active env: ${env}`)
     const envConfig = parseEnvConfigFile(env);
-    logger.debug(envConfig)
+    log.debug(envConfig)
 
     requireNonNull(envConfig.config_type, 
         'No [config_type] found in env.ini'
