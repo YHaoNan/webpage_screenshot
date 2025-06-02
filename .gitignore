@@ -1,7 +1,48 @@
-node_modules
-dist
-.env
-.env.local
-.env.development
-.env.production
-ws.log
+# 忽略前端 node_modules、dist、日志
+/webpage_screenshot_fe/node_modules/
+/webpage_screenshot_fe/dist
+/webpage_screenshot_fe/ws.log
+
+# 忽略前端依赖锁文件（如不需要可去掉）
+/webpage_screenshot_fe/package-lock.json
+
+# 忽略后端 Java 构建输出
+/webpage_screenshot_sdk/target/
+/webpage_screenshot_sdk/build/
+
+# 保留 SDK 代码下的 target、build（如有特殊需求）
+!/webpage_screenshot_sdk/src/main/**/target/
+/webpage_screenshot_sdk/.mvn/wrapper/maven-wrapper.jar
+!/webpage_screenshot_sdk/src/main/**/build/
+
+# 忽略 IDE 配置
+/webpage_screenshot_sdk/.idea/
+/webpage_screenshot_sdk/.idea/*
+/webpage_screenshot_sdk/*.iml
+/webpage_screenshot_sdk/*.ipr
+/webpage_screenshot_sdk/*.iws
+
+# 忽略 Eclipse 配置
+/webpage_screenshot_sdk/.classpath
+/webpage_screenshot_sdk/.project
+/webpage_screenshot_sdk/.settings
+/webpage_screenshot_sdk/.factorypath
+/webpage_screenshot_sdk/.apt_generated
+/webpage_screenshot_sdk/.springBeans
+/webpage_screenshot_sdk/.sts4-cache
+
+# 忽略 NetBeans 配置
+/webpage_screenshot_sdk/nbproject/private/
+/webpage_screenshot_sdk/nbbuild/
+/webpage_screenshot_sdk/dist/
+/webpage_screenshot_sdk/nbdist/
+/webpage_screenshot_sdk/.nb-gradle/
+
+# 忽略 VS Code 配置
+/webpage_screenshot_sdk/.vscode/
+
+# 忽略 Mac OS 文件
+/webpage_screenshot_sdk/.DS_Store
+
+# 通用忽略
+.DS_Store
