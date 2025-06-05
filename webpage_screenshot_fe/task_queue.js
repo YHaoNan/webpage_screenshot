@@ -82,7 +82,7 @@ class RedisTask extends Task {
     reportStatus(status, imageBase64, failedReason) {
         this.redis.set(
             `${this.config.queueName}:result:${this.id}`, 
-            JSON.stringify({status, imageBase64, failedReason}),
+            JSON.stringify({id: this.id, status, imageBase64, failedReason}),
             "EX",
             this.config.consumeTimeout
         );
