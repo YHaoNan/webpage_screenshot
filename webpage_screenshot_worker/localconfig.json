@@ -1,0 +1,11 @@
+{
+    "redisHost": "172.24.0.185",
+    "redisPort": 6379,
+    "redisDB": 1,
+    "redisUserName": null,
+    "redisPassword": null,
+    "queueName": "webpage_screenshot:taskqueue",
+    "consumeTimeout": 100,
+    "chromePath": "/chrome-linux/chrome",
+    "maxConcurrentInflightTask": 10
+}
