@@ -1,8 +1,10 @@
-var winston = require('winston');
-var path = require('path');
+import winston from 'winston';
+import path from 'path';
+import { fileURLToPath } from 'node:url';
+import { dirname } from 'node:path'
 
 // Set this to whatever, by default the path of the script.
-var logPath = __dirname;
+const logPath = path.join(dirname(fileURLToPath(import.meta.url)), 'logs');
 const tsFormat = () => (new Date().toISOString());
     
 const log = winston.createLogger({
@@ -20,6 +22,4 @@ const log = winston.createLogger({
 });
     
     
-module.exports = {
-    log
-};
+export {log}
