@@ -8,16 +8,17 @@ const STATUS_SUCCESS = 1;
 class Task {
 
     constructor(
-        id,
-        url,
-        viewPort = {width: 1920, height: 1080},
-        headers = {},
-        imageFormat = 'jpeg',
-        imageQuality = 80,
-        resubmitOnError = false,
-        resubmitCount = 0,
-        maxResubmitCount = 3,
-        timeoutAt
+        id,  // 截图任务id
+        url, // 截图任务页面url
+        viewPort = {width: 1920, height: 1080}, // 截图任务页面视口
+        headers = {}, // 截图任务页面自带请求头
+        imageFormat = 'jpeg', // 截图格式
+        imageQuality = 80, // 截图质量
+        resubmitOnError = false, // TODO: 失败后重提交
+        resubmitCount = 0,  // TODO: 重提交count
+        maxResubmitCount = 3, // TODO: 最大重提交次数
+        timeoutAt, // TODO: 超时时间
+        delay = 0  // 延迟ms
     ) {
         this.id = id;
         this.url = url;
@@ -29,6 +30,7 @@ class Task {
         this.resubmitCount = resubmitCount;
         this.maxResubmitCount = maxResubmitCount;
         this.timeoutAt = timeoutAt;
+        this.delay = delay;
     }
 
     reportStatus(status, failedReason) {

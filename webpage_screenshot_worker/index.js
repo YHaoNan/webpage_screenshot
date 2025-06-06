@@ -84,6 +84,12 @@ while (true) {
                 const quality = task.imageQuality || 60;
 
                 log.debug(`Task ${task.id} screenshot...`);
+
+                if (task.delay) {
+                    log.debug(`Task ${task.id} delay ${task.delay}ms before take screenshot...`);
+                    await wait(task.delay);
+                }
+
                 const imageBase64 = await page.screenshot({
                     type,
                     quality,
