@@ -2,7 +2,6 @@ import { requireNonNull } from './common.js'
 import { parse } from 'ini'
 import process from 'process'
 import { log } from './logger.js'
-import { NacosConfigClient } from 'nacos';
 import fs from 'fs'
 
 
@@ -57,14 +56,14 @@ class Config {
 class LocalFileConfig extends Config {
     constructor(env) {
         super(env);
-        requireNonNull(env.file_path, 
-            'No [file_path] found in env.ini'
+        requireNonNull(env.config_file_path, 
+            'No [config_file_path] found in env.ini'
         );
-        log.info(`Using local config file: ${env.file_path}`);
+        log.info(`Using local config file: ${env.config_file_path}`);
     }
 
     loadConfig() {
-        const configContent = fs.readFileSync(this.env.file_path, 'utf-8');
+        const configContent = fs.readFileSync(this.env.config_file_path, 'utf-8');
         const config = JSON.parse(configContent)
         console.log(config)
         super.set(
@@ -102,17 +101,16 @@ class NacosConfig extends Config {
     }
 
     async loadConfig() {
-        log.info(`Initializing Nacos client...`)
-        const client = new NacosConfigClient({
-            serverAddr: this.env.nacos_address,
-            namespace: this.env.nacos_namespace,
-        });
-        log.info(`Done.`)
-        log.info(`Loading config from Nacos...`)
-        const remoteConfig = await client.getConfig(this.env.nacos_config_data_id, this.env.nacos_config_group);
-        log.info(`Done.`)
-        console.log(remoteConfig)
-
+        // log.info(`Initializing Nacos client...`)
+        // const client = new NacosConfigClient({
+        //     serverAddr: this.env.nacos_address,
+        //     namespace: this.env.nacos_namespace,
+        // });
+        // log.info(`Done.`)
+        // log.info(`Loading config from Nacos...`)
+        // const remoteConfig = await client.getConfig(this.env.nacos_config_data_id, this.env.nacos_config_group);
+        // log.info(`Done.`)
+        // console.log(remoteConfig)
     }
 }
 
@@ -153,10 +151,19 @@ function parseEnvConfigFile(env) {
     const parsedConfig = parse(config);
     const globalConfig = parsedConfig.global;
     const currentEnvConfig = parsedConfig[env];
-    return {
+    const envFromFile = {
         ...globalConfig,
         ...currentEnvConfig
     }
+    // Replace the envObject with the environment variables
+    const envFromEnvironmentVariables = process.env;
+    for (const key in envFromEnvironmentVariables) {
+        if (key.startsWith('screenshot.')) {
+            const realKey = key.replace('screenshot.', '');
+            envFromFile[realKey] = envFromEnvironmentVariables[key];
+        }
+    }
+    return envFromFile;
 }
 
 export { 
