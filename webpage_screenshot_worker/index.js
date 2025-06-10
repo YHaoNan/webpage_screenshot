@@ -1,9 +1,9 @@
 
 import { initConfig } from './config.js';
 import { initQueue, STATUS_FAILED, STATUS_SUCCESS } from './task_queue.js';
-import puppeteer from 'puppeteer-core';
 import { AtomicInt } from './atomic.js';
 import { log } from './logger.js';
+import { createBrowser, BROWSER_STATUS_ACTIVE } from './browser.js';
 
 
 log.info(`Start to initialize config...`)
@@ -15,15 +15,7 @@ const queue = initQueue(config);
 log.info(`Done.`)
 
 log.info(`Creating browser instance...`)
-const browser = await puppeteer.launch({
-    args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-    ],
-    executablePath: config.chromePath
-});
+const browser = await createBrowser(config);
 log.info(`Done.`)
 
 const inflightScreenShotTask = new AtomicInt(0);
@@ -31,6 +23,12 @@ const inflightScreenShotTask = new AtomicInt(0);
 log.info(`Entering mainloop...`)
 
 while (true) {
+    if (browser.status !== BROWSER_STATUS_ACTIVE) {
+        log.error('mainloop: browser disconnected. waiting for restart...');
+        await wait(1000);
+        continue;
+    }
+    
     // Limit the max inflight screen shot task count
     const inflightTaskCount = await inflightScreenShotTask.getAndIncrement();
     log.debug(`inflightTaskCount: ${inflightTaskCount}`);
@@ -40,10 +38,10 @@ while (true) {
         await wait(1000);
         continue;
     }
+    
 
     // We have safe screen shot task count if we reached here.
     // So we can take one task from the queue.
-
     const task = await queue.take();
     if (!task) {
         await inflightScreenShotTask.getAndIncrement(-1);
@@ -64,7 +62,7 @@ while (true) {
     
     try {
         log.debug(`Task ${task.id} new page creating...`);
-        browser.newPage().then(async (page) => {  // newPage是一个异步操作，不会阻塞主事件循环
+        browser.browser.newPage().then(async (page) => {  // newPage是一个异步操作，不会阻塞主事件循环
 
             log.debug(`Task ${task.id} got a new page`);
             // todo timeoutAt检查
