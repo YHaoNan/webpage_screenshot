@@ -8,7 +8,7 @@ import { createBrowser, BROWSER_STATUS_ACTIVE } from './browser.js';
 
 log.info(`Start to initialize config...`)
 const config = await initConfig();
-log.info(`done ${config}`);
+log.info(`done ${JSON.stringify(config)}`);
 
 log.info(`Start to initialize task queue...`)
 const queue = initQueue(config);
@@ -17,6 +17,21 @@ log.info(`Done.`)
 log.info(`Creating browser instance...`)
 const browser = await createBrowser(config);
 log.info(`Done.`)
+
+if (config.warmupUrlList) {
+    log.info(`Found ${config.warmupUrlList.length} target in warmup url list. Warmup browser...`);
+    for (const warmupEntry of config.warmupUrlList) {
+        if (warmupEntry && warmupEntry.url) { 
+            log.info(`Warmup: ${warmupEntry.url} with delay ${warmupEntry.delay || 2000}ms...`);
+            await browser.browser.newPage().then(async (page) => {
+                await page.goto(warmupEntry.url);
+                await wait(warmupEntry.delay || 2000);
+                await page.close();
+                log.info(`Warmup Done: ${warmupEntry.url}.`);
+            });
+        }
+    }
+}
 
 const inflightScreenShotTask = new AtomicInt(0);
 
@@ -57,7 +72,7 @@ while (true) {
         continue;
     }
 
-    log.debug(`find task id ${task.id} => ${task}`);
+    log.debug(`find task id ${task.id} => ${JSON.stringify(task)}`);
 
     
     try {
@@ -81,12 +96,13 @@ while (true) {
                 const type = task.imageFormat || 'jpeg';
                 const quality = task.imageQuality || 60;
 
-                log.debug(`Task ${task.id} screenshot...`);
 
                 if (task.delay) {
                     log.debug(`Task ${task.id} delay ${task.delay}ms before take screenshot...`);
                     await wait(task.delay);
                 }
+
+                log.debug(`Task ${task.id} screenshot...`);
 
                 const imageBase64 = await page.screenshot({
                     type,

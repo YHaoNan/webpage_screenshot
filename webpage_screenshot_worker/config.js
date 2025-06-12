@@ -10,7 +10,7 @@ class Config {
         this.env = env
     }
 
-    set(redisHost, redisPort, redisDB, redisUserName, redisPassword, queueName, consumeTimeout, chromePath, maxConcurrentInflightTask) {
+    set(redisHost, redisPort, redisDB, redisUserName, redisPassword, queueName, consumeTimeout, chromePath, maxConcurrentInflightTask, warmupUrlList) {
         this.redisHost = redisHost
         this.redisPort = redisPort
         requireNonNull(this.redisHost, 
@@ -46,6 +46,7 @@ class Config {
             log.warn(`No [maxConcurrentInflightTask] found in local config file. Fallback to 10`);
             this.maxConcurrentInflightTask = 10;
         }
+        this.warmupUrlList = warmupUrlList
     }
 
     async loadConfig() {
@@ -75,7 +76,8 @@ class LocalFileConfig extends Config {
             config.queueName,
             config.consumeTimeout,
             config.chromePath,
-            config.maxConcurrentInflightTask
+            config.maxConcurrentInflightTask,
+            config.warmupUrlList
         )
     }
 }
